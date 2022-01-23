@@ -7,26 +7,30 @@ const COLORS = [
   '#f00'
 ]
 export default function Slider(props) {
+  const [sliderValue, setSliderValue] = useState(0);
+  const [translation,setTranslation] = useState(0);
   let sliderEachPointValue=[]
   for (let index = 0; index < 11; index++) {
     sliderEachPointValue.push(<Text style={{color:'white',fontWeight:'bold'}}>{index}</Text>)
   }
   const translatePickerOnScale=(e)=>{
-    if (e.touchX-e.nativeEvent.pageX>20){
-        //? Swipe Left
-        if(props.Translation<=0){
+    if (e.touchY-e.nativeEvent.pageY>20){
+        //? Swipe Up
+        if(translation<=0){
             return;
         }
-        props.setTranslation(props.Translation-4)
+        setTranslation(translation-20)
+        e.touchY = e.nativeEvent.pageY
     }
-    if (e.touchX-e.nativeEvent.pageX<-20){
-        //? Swipe Right
-        if(props.Translation>=240){
+    if (e.touchY-e.nativeEvent.pageY<-20){
+        //? Swipe Down
+        if(translation>=300){
             return;
         }
-        props.setTranslation(props.Translation+4)
+        setTranslation(translation+20)
+        e.touchY = e.nativeEvent.pageY
     }
-    props.setValue(parseInt(props.Translation/(245/11)))
+    setSliderValue(parseInt(translation/(300/10)))
   }
   
   return (
@@ -34,7 +38,7 @@ export default function Slider(props) {
         <LinearGradient 
           colors={COLORS} 
           start={{x:0,y:0}}
-          end={{x:1,y:0}}
+          end={{x:0,y:1}}
           style={styles.scale}
         >
           <View style={styles.scaleInside}>
@@ -44,7 +48,7 @@ export default function Slider(props) {
         <Animated.View 
           style={{
             position:'absolute',
-            left:0,
+            top:0,
             width:CIRCLE_PICKER_SIZE,
             height:CIRCLE_PICKER_SIZE,
             borderRadius:CIRCLE_PICKER_SIZE/2,
@@ -53,14 +57,14 @@ export default function Slider(props) {
             borderColor:'rgba(0,0,0,0.1)',
             justifyContent:'center',
             alignItems:'center',
-            transform:[{translateX:props.Translation}]
+            transform:[{translateY:translation}]
           }}
-          onTouchStart = { e => {e.touchX = e.nativeEvent.pageX} }
+          onTouchStart = { e => {e.touchY = e.nativeEvent.pageY;props.setItem(props.item)} }
           onTouchMove={ e => translatePickerOnScale(e) }
-          onTouchEnd={e=>{props.onSlidingEnd()}}
+          onTouchEnd={()=>{props.onSlidingEnd(props.index,sliderValue)}}
           >
           <View style={styles.pickerInsider}>
-            <Text style={{fontWeight:'bold',color:'white'}}>{props.value}</Text>
+            <Text style={{fontWeight:'bold',color:'white'}}>{sliderValue}</Text>
           </View>
         </Animated.View>
       </View>
@@ -70,12 +74,10 @@ export default function Slider(props) {
 const CIRCLE_PICKER_SIZE=45;
 const styles = StyleSheet.create({
   container:{
-    flexDirection:'row',
-    flexWrap:'wrap',
-    justifyContent:'center',
+    flex:1,
+    flexDirection:'column',
     alignItems:'center',
-    height:35,
-    width:'90%'
+    width:50
   },
   scale:{
     flex:1,
@@ -97,7 +99,7 @@ const styles = StyleSheet.create({
   scaleInside:{
     justifyContent:'space-evenly',
     alignItems:'center',
-    flexDirection:'row',
+    flexDirection:'column',
     flex:1
   }
 });
